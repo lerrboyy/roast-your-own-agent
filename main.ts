@@ -10,7 +10,7 @@
 //     OUTPUT_DIR=./out node main.ts
 //     node main.ts ./out
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROAST: string =
@@ -41,6 +41,17 @@ function main(): void {
 
   const outputPath: string = join(outputDir, OUTPUT_FILE);
   writeFileSync(outputPath, ROAST + "\n", "utf8");
+
+  // Verify the write by reading the file back: what landed on disk must
+  // be exactly the roast line plus a trailing newline, nothing more.
+  const written: string = readFileSync(outputPath, "utf8");
+  if (written !== ROAST + "\n") {
+    throw new Error(
+      `Read-back verification failed for ${outputPath}: ` +
+        `expected ${ROAST.length + 1} characters (roast plus newline), ` +
+        `got ${written.length} characters.`,
+    );
+  }
 
   console.log(`Wrote ${ROAST.length}-character roast to ${outputPath}`);
 }
